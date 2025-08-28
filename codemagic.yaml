@@ -4,7 +4,7 @@ workflows:
     max_build_duration: 60
     environment:
       node: 20
-      xcode: 15.0
+      xcode: 14.3
       cocoapods: default
     scripts:
       - name: Install npm dependencies
@@ -16,29 +16,29 @@ workflows:
       - name: Setup iOS project
         script: |
           npx cap sync ios
+      - name: Update iOS deployment target
+        script: |
+          cd ios/App
+          sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = [^;]*/IPHONEOS_DEPLOYMENT_TARGET = 13.0/' App.xcodeproj/project.pbxproj
       - name: Install CocoaPods
         script: |
-          cd ios/App && pod install
-      - name: Clean build folder
+          cd ios/App
+          pod deintegrate
+          pod install --repo-update
+      - name: Build iOS Archive
         script: |
           cd ios/App
-          rm -rf ~/Library/Developer/Xcode/DerivedData
-          xcodebuild clean -project App.xcodeproj -scheme App
-      - name: Build iOS App for Simulator
-        script: |
-          cd ios/App
-          xcodebuild \
-            -project App.xcodeproj \
+          xcodebuild archive \
+            -workspace App.xcworkspace \
             -scheme App \
-            -configuration Debug \
-            -sdk iphonesimulator \
-            -arch x86_64 \
-            ONLY_ACTIVE_ARCH=NO \
+            -configuration Release \
+            -sdk iphoneos \
+            -archivePath build/App.xcarchive \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_ALLOWED=NO \
             DEVELOPMENT_TEAM="" \
-            -derivedDataPath build
+            -allowProvisioningUpdates \
+            | xcpretty
     artifacts:
-      - ios/App/build/Build/Products/**/*.app
-      - ios/App/build/Build/Products/**/*.dSYM
+      - ios/App/build/**
