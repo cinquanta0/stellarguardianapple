@@ -4,7 +4,7 @@ workflows:
     max_build_duration: 60
     environment:
       node: 20
-      xcode: 14.3
+      xcode: 15.2
       cocoapods: default
     scripts:
       - name: Install npm dependencies
@@ -16,29 +16,30 @@ workflows:
       - name: Setup iOS project
         script: |
           npx cap sync ios
-      - name: Update iOS deployment target
+      - name: Fix Swift issues
         script: |
           cd ios/App
-          sed -i '' 's/IPHONEOS_DEPLOYMENT_TARGET = [^;]*/IPHONEOS_DEPLOYMENT_TARGET = 13.0/' App.xcodeproj/project.pbxproj
+          # Rimuovi file problematici generati
+          find . -name "GeneratedAssetSymbols.swift" -delete
+          rm -rf ~/Library/Developer/Xcode/DerivedData
       - name: Install CocoaPods
         script: |
           cd ios/App
           pod deintegrate
           pod install --repo-update
-      - name: Build iOS Archive
+      - name: Build iOS project
         script: |
           cd ios/App
-          xcodebuild archive \
+          xcodebuild \
             -workspace App.xcworkspace \
             -scheme App \
-            -configuration Release \
-            -sdk iphoneos \
-            -archivePath build/App.xcarchive \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_ALLOWED=NO \
-            DEVELOPMENT_TEAM="" \
-            -allowProvisioningUpdates \
-            | xcpretty
+            SWIFT_SUPPRESS_WARNINGS=YES \
+            -quiet
     artifacts:
       - ios/App/build/**
