@@ -19,8 +19,22 @@ workflows:
       - name: Install CocoaPods
         script: |
           cd ios/App && pod install
-      - name: Build iOS
+      - name: Disable automatic code signing
         script: |
-          xcodebuild build -workspace ios/App/App.xcworkspace -scheme App -configuration Release -derivedDataPath build/ios
+          cd ios/App
+          sed -i '' 's/ProvisioningStyle = Automatic/ProvisioningStyle = Manual/' App.xcodeproj/project.pbxproj
+          sed -i '' 's/CODE_SIGN_IDENTITY = "iPhone Developer"/CODE_SIGN_IDENTITY = ""/' App.xcodeproj/project.pbxproj
+          sed -i '' 's/CODE_SIGN_STYLE = Automatic/CODE_SIGN_STYLE = Manual/' App.xcodeproj/project.pbxproj
+      - name: Build iOS without signing
+        script: |
+          cd ios/App
+          xcodebuild build \
+            -project App.xcodeproj \
+            -scheme App \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -destination 'platform=iOS Simulator,name=iPhone 14' \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
     artifacts:
-      - build/ios/**/*.app
+      - ios/App/build/**/*.app
