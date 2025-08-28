@@ -1,37 +1,26 @@
 workflows:
-  ios-capacitor-build:
-    name: iOS Capacitor Build
+  ios-workflow:
+    name: iOS Workflow
     max_build_duration: 60
     environment:
-      vars:
-        APP_NAME: "Stellar Guardian"
-        BUNDLE_ID: "com.lucad.stellarguardian"   # Cambia con il tuo bundle id
-        NODE_VERSION: "16"
-      node: $NODE_VERSION
-      xcode: latest
+      node: 20
+      xcode: 15.0
       cocoapods: default
-    cache:
-      cache_paths:
-        - $HOME/.npm
-        - $HOME/Library/Caches/CocoaPods
     scripts:
-      - name: Install dependencies
+      - name: Install npm dependencies
         script: |
           npm install
       - name: Build web assets
         script: |
           npm run build
-      - name: Copy Capacitor assets
+      - name: Setup iOS project
         script: |
-          npx cap copy ios
+          npx cap sync ios
       - name: Install CocoaPods
         script: |
-          cd ios/App
-          pod install
+          cd ios/App && pod install
+      - name: Build iOS
+        script: |
+          xcodebuild build -workspace ios/App/App.xcworkspace -scheme App -configuration Release -derivedDataPath build/ios
     artifacts:
-      - build/ios/ipa/*.ipa
-      - build/ios/xcarchive/*.xcarchive
-    publishing:
-      email:
-        recipients:
-          - "rosangela.calasso69@gmail.com"   
+      - build/ios/**/*.app
