@@ -5,7 +5,8 @@
   "main": "audio.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "echo 'Build completed - www folder ready'"
+    "build": "echo 'Build completed - www folder ready'",
+    "capacitor:sync": "npx cap sync ios || echo 'Capacitor sync skipped'"
   },
   "keywords": [],
   "author": "",
