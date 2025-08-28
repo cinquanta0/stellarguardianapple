@@ -1,0 +1,6 @@
+{
+  "appId": "com.tuonome.stellarguardian",
+  "appName": "Stellar Guardian",
+  "webDir": "www",
+  "bundledWebRuntime": false
+}
