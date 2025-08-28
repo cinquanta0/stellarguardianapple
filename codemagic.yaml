@@ -16,30 +16,30 @@ workflows:
       - name: Setup iOS project
         script: |
           npx cap sync ios
-      - name: Fix Swift issues
-        script: |
-          cd ios/App
-          # Rimuovi file problematici generati
-          find . -name "GeneratedAssetSymbols.swift" -delete
-          rm -rf ~/Library/Developer/Xcode/DerivedData
       - name: Install CocoaPods
         script: |
-          cd ios/App
-          pod deintegrate
-          pod install --repo-update
-      - name: Build iOS project
+          cd ios/App && pod install
+      - name: Build for device
         script: |
           cd ios/App
-          xcodebuild \
+          # Crea l'archive per dispositivo reale
+          xcodebuild archive \
             -workspace App.xcworkspace \
             -scheme App \
-            -configuration Debug \
-            -sdk iphonesimulator \
-            -destination 'generic/platform=iOS Simulator' \
+            -configuration Release \
+            -sdk iphoneos \
+            -archivePath build/App.xcarchive \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_ALLOWED=NO \
-            SWIFT_SUPPRESS_WARNINGS=YES \
-            -quiet
+            CODE_SIGNING_ALLOWED=NO
+      - name: Create IPA
+        script: |
+          cd ios/App
+          # Crea il file .ipa
+          mkdir -p build/Payload
+          cp -R build/App.xcarchive/Products/Applications/App.app build/Payload/
+          cd build
+          zip -r StellarGuardian.ipa Payload
+          echo "✅ IPA created successfully!"
     artifacts:
-      - ios/App/build/**
+      - ios/App/build/*.ipa
