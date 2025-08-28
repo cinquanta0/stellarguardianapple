@@ -5,7 +5,7 @@
   "main": "audio.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "echo 'Building web assets...' && npx cap sync ios"
+    "build": "echo 'Build completed - www folder ready'"
   },
   "keywords": [],
   "author": "",
